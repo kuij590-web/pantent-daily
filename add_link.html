@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>IP 早报 - 添加文章链接</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, 'PingFang SC', sans-serif; background: #f0f2f5; padding: 20px; }
+.container { max-width: 600px; margin: 0 auto; }
+.card { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 16px; }
+h1 { font-size: 18px; color: #1a73e8; margin-bottom: 16px; }
+textarea { width: 100%; height: 200px; border: 1px solid #ddd; border-radius: 8px; padding: 12px; font-size: 14px; resize: vertical; outline: none; }
+textarea:focus { border-color: #1a73e8; }
+.btn { background: #1a73e8; color: #fff; border: none; border-radius: 8px; padding: 12px 24px; font-size: 15px; cursor: pointer; width: 100%; margin-top: 12px; }
+.btn:hover { background: #1557b0; }
+.help { font-size: 13px; color: #666; line-height: 1.6; margin-top: 8px; }
+.help code { background: #f5f5f5; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+.tip { color: #999; font-size: 12px; text-align: center; margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="card">
+        <h1>📋 添加今日文章链接</h1>
+        <p style="color:#666;font-size:13px;margin-bottom:12px;">
+            把今天看到的好文章链接贴进来，一行一个
+        </p>
+        <textarea id="linkInput" placeholder="https://mp.weixin.qq.com/s/xxxxx&#10;https://mp.weixin.qq.com/s/yyyyy # 这篇文章讲商标&#10;https://www.zhichanli.com/p/xxxx"></textarea>
+        <button class="btn" onclick="saveLinks()">保存链接</button>
+        <div class="help">
+            💡 提示：链接后面可以加 <code># 备注</code>，方便识别
+        </div>
+        <div class="tip" id="status"></div>
+    </div>
+</div>
+<script>
+function saveLinks() {
+    var text = document.getElementById('linkInput').value.trim();
+    if (!text) { alert('请先粘贴链接'); return; }
+    
+    // 调用本地 API 保存（方式一：通过 fetch 调本地服务）
+    // 或者直接下载文件（方式二）
+    var blob = new Blob([text], {type: 'text/plain;charset=utf-8'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'manual_links.md';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    
+    document.getElementById('status').textContent = '✅ 已下载为 manual_links.md，请覆盖到 data/ 文件夹';
+}
+</script>
+</body>
+</html>

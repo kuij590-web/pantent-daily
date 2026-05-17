@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>知产导航 - 知识产权信息门户</title>
+<style>
+  :root {
+    --primary: #1a73e8;
+    --primary-dark: #155cba;
+    --primary-light: #e8f0fe;
+    --green: #0f9d58;
+    --green-light: #e6f4ea;
+    --red: #d93025;
+    --red-light: #fce8e6;
+    --purple: #9334e6;
+    --purple-light: #f3e8fd;
+    --orange: #e37400;
+    --orange-light: #fef3e0;
+    --teal: #0dc2b8;
+    --teal-light: #e6faf8;
+    --pink: #e83e8c;
+    --bg: #f5f6fa;
+    --card-bg: #fff;
+    --text: #1d1d1f;
+    --text-secondary: #6e6e73;
+    --text-tertiary: #aeaeb2;
+    --border: #e8eaed;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+    --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --nav-height: 52px;
+  }
+
+  /* ====== 暗黑模式 ====== */
+  [data-theme="dark"] {
+    --bg: #1a1a1e;
+    --card-bg: #2c2c30;
+    --text: #f5f5f7;
+    --text-secondary: #a1a1a6;
+    --text-tertiary: #7c7c80;
+    --border: #3a3a3e;
+    --primary-light: #1a3a5c;
+    --shadow-sm: 0 1px 3px rgba(0,0,0,0.2);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.3);
+    --shadow-lg: 0 8px 30px rgba(0,0,0,0.4);
+  }
+  [data-theme="dark"] .top-nav { background: rgba(44,44,48,0.92); }
+  [data-theme="dark"] .search-wrapper { background: #3a3a3e; }
+  [data-theme="dark"] .search-wrapper select { background: #2c2c30; color: #f5f5f7; border-color: #4a4a4e; }
+  [data-theme="dark"] .search-wrapper input { color: #f5f5f7; }
+  [data-theme="dark"] .search-wrapper input::placeholder { color: #7c7c80; }
+  [data-theme="dark"] .quick-icons .icon-item:hover { background: #3a3a3e; }
+  [data-theme="dark"] .featured-section { background: linear-gradient(135deg, #1a2a3e 0%, #2a1a3e 100%); border-color: #3a3a5e; }
+  [data-theme="dark"] .info-bar { border-color: #3a3a3e; }
+  [data-theme="dark"] .section-tabs a { border-color: #3a3a3e; background: #2c2c30; }
+  [data-theme="dark"] .section-tabs a:hover { border-color: var(--primary); }
+  [data-theme="dark"] .nav-links a:hover { background: #3a3a3e; }
+  [data-theme="dark"] .nav-links a.active { background: #3a3a3e; }
+
+  /* 暗黑模式切换按钮 */
+  .theme-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.2s;
+    flex-shrink: 0;
+    margin-left: 8px;
+  }
+  .theme-toggle:hover { background: var(--primary-light); border-color: var(--primary); }
+
+  /* 搜索过滤条 */
+  .filter-bar {
+    max-width: 980px;
+    margin: 12px auto 4px;
+    padding: 0 16px;
+  }
+  .filter-bar input {
+    width: 100%;
+    padding: 10px 16px 10px 40px;
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    font-size: 14px;
+    background: var(--card-bg) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='M21 21l-4.35-4.35'/%3E%3C/svg%3E") 12px center no-repeat;
+    color: var(--text);
+    outline: none;
+    transition: all 0.2s;
+  }
+  .filter-bar input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
+  .filter-bar input::placeholder { color: var(--text-tertiary); }
+
+  /* 无匹配结果提示 */
+  .no-results {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-tertiary);
+    display: none;
+  }
+  .no-results .nr-icon { font-size: 40px; margin-bottom: 12px; }
+  .no-results .nr-text { font-size: 14px; }
+
+  /* 卡片隐藏动画 */
+  .card.hidden, .featured-card.hidden, .section.hidden { display: none; }
+  .section.filtered-out { opacity: 0.5; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding-top: var(--nav-height);
+  }
+
+  /* ====== 顶部导航栏 ====== */
+  .top-nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--nav-height);
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    transition: box-shadow 0.3s;
+  }
+  .top-nav.scrolled { box-shadow: 0 1px 8px rgba(0,0,0,0.08); }
+  .top-nav .logo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--primary);
+    text-decoration: none;
+    white-space: nowrap;
+    margin-right: 20px;
+    flex-shrink: 0;
+  }
+  .top-nav .logo span { font-size: 18px; }
+  .top-nav .nav-links {
+    display: flex;
+    gap: 1px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    flex: 1;
+  }
+  .top-nav .nav-links::-webkit-scrollbar { display: none; }
+  .top-nav .nav-links a {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    padding: 6px 10px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    border-radius: 8px;
+    white-space: nowrap;
+    transition: all 0.2s;
+    font-weight: 500;
+  }
+  .top-nav .nav-links a:hover { color: var(--primary); background: var(--primary-light); }
+  .top-nav .nav-links a.active { color: var(--primary); background: var(--primary-light); font-weight: 600; }
+
+  /* ====== Hero 搜索区 ====== */
+  .hero {
+    background: linear-gradient(135deg, #1a73e8 0%, #155cba 40%, #9334e6 100%);
+    padding: 36px 20px 30px;
+    text-align: center;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 30% 50%, rgba(255,255,255,0.05) 0%, transparent 50%),
+                radial-gradient(circle at 70% 50%, rgba(255,255,255,0.03) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  .hero .hero-content { position: relative; z-index: 1; }
+  .hero h1 {
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    background: linear-gradient(to right, #fff, rgba(255,255,255,0.85));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero p { font-size: 14px; opacity: 0.8; margin-top: 6px; }
+
+  .search-wrapper {
+    max-width: 640px;
+    margin: 20px auto 0;
+    display: flex;
+    background: #fff;
+    border-radius: 28px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    position: relative;
+    z-index: 1;
+  }
+  .search-wrapper select,
+  .search-wrapper input,
+  .search-wrapper button { border: none; outline: none; font-size: 14px; }
+  .search-wrapper select {
+    padding: 12px 10px 12px 16px;
+    background: #f8f9fa;
+    color: #333;
+    cursor: pointer;
+    min-width: 88px;
+    font-size: 13px;
+    font-weight: 500;
+    border-right: 1px solid #eee;
+  }
+  .search-wrapper input {
+    flex: 1;
+    padding: 12px 14px;
+    background: transparent;
+    color: #333;
+    min-width: 0;
+  }
+  .search-wrapper input::placeholder { color: #999; }
+  .search-wrapper button {
+    padding: 12px 24px;
+    background: var(--primary);
+    color: #fff;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.2s;
+    min-width: 72px;
+  }
+  .search-wrapper button:hover { background: var(--primary-dark); }
+
+  .hot-searches {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 14px;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 1;
+  }
+  .hot-searches span { font-size: 12px; opacity: 0.6; color: #fff; }
+  .hot-searches a {
+    font-size: 12px;
+    color: rgba(255,255,255,0.85);
+    text-decoration: none;
+    padding: 3px 12px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 12px;
+    transition: all 0.2s;
+  }
+  .hot-searches a:hover { background: rgba(255,255,255,0.25); color: #fff; }
+
+  /* ====== 快捷图标区 ====== */
+  .quick-icons {
+    max-width: 980px;
+    margin: -24px auto 0;
+    padding: 0 16px;
+    position: relative;
+    z-index: 2;
+  }
+  .quick-icons .icon-grid {
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    padding: 20px 8px 14px;
+    box-shadow: var(--shadow-md);
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 4px;
+  }
+  .quick-icons .icon-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: var(--text);
+    padding: 8px 2px;
+    border-radius: var(--radius-sm);
+    transition: all 0.2s;
+    gap: 6px;
+  }
+  .quick-icons .icon-item:hover { background: #f5f5f7; transform: translateY(-2px); }
+  .quick-icons .icon-item .qi-icon {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .quick-icons .icon-item .qi-icon img { width: 22px; height: 22px; border-radius: 2px; }
+  .quick-icons .icon-item .qi-name {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  /* ====== 板块导航 Tab ====== */
+  .section-tabs {
+    max-width: 980px;
+    margin: 18px auto 4px;
+    padding: 0 16px;
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .section-tabs a {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: var(--card-bg);
+    border-radius: 20px;
+    text-decoration: none;
+    border: 1px solid var(--border);
+    transition: all 0.2s;
+    box-shadow: var(--shadow-sm);
+  }
+  .section-tabs a:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+
+  /* ====== 主体 ====== */
+  .container { max-width: 980px; margin: 8px auto 0; padding: 0 16px; }
+
+  .info-bar {
+    text-align: center;
+    margin: 6px 0 18px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    background: var(--card-bg);
+    padding: 10px 16px;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+  }
+  .info-bar .dot-divider { margin: 0 8px; color: var(--text-tertiary); }
+
+  /* ====== 板块 ====== */
+  .section {
+    margin-bottom: 20px;
+    background: var(--card-bg);
+    border-radius: var(--radius-lg);
+    padding: 20px 20px 16px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    scroll-margin-top: calc(var(--nav-height) + 16px);
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .section-header .icon-box {
+    width: 34px; height: 34px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    margin-right: 12px;
+    color: #fff;
+    flex-shrink: 0;
+  }
+  .section-header .section-title {
+    font-size: 18px;
+    font-weight: 700;
+    flex: 1;
+  }
+  .section-header .badge {
+    font-size: 11px;
+    color: var(--text-secondary);
+    background: #f0f0f0;
+    padding: 3px 10px;
+    border-radius: 10px;
+    font-weight: 500;
+    margin-left: 8px;
+    white-space: nowrap;
+  }
+  .section-header .more-link {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    text-decoration: none;
+    margin-left: 12px;
+    transition: color 0.2s;
+    white-space: nowrap;
+  }
+  .section-header .more-link:hover { color: var(--primary); }
+
+  /* 卡片网格 - 图标+名称+描述 */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+    gap: 10px;
+  }
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 14px 10px;
+    text-decoration: none;
+    color: var(--text);
+    transition: all 0.25s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    cursor: pointer;
+  }
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary);
+  }
+  .card .card-icon {
+    width: 32px; height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+  .card .card-icon img {
+    width: 24px;
+    height: 24px;
+    border-radius: 3px;
+  }
+  .card .card-icon .fallback {
+    font-size: 22px;
+    line-height: 1;
+  }
+  .card .name { font-size: 13px; font-weight: 600; line-height: 1.4; }
+  .card .desc { font-size: 11px; color: var(--text-tertiary); margin-top: 3px; line-height: 1.3; }
+
+  /* ====== 特色产品区 ====== */
+  .featured-section {
+    margin-bottom: 20px;
+    background: linear-gradient(135deg, #f0f6ff 0%, #f5f0ff 100%);
+    border-radius: var(--radius-lg);
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid #d6e4ff;
+    scroll-margin-top: calc(var(--nav-height) + 16px);
+  }
+  .featured-section .section-header .icon-box {
+    background: linear-gradient(135deg, var(--primary), var(--purple));
+  }
+  .featured-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+  }
+  .featured-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    background: var(--card-bg);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    color: var(--text);
+    border: 1px solid transparent;
+    transition: all 0.25s;
+    box-shadow: var(--shadow-sm);
+  }
+  .featured-card:hover { border-color: var(--primary); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+  .featured-card .f-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .featured-card .f-info .f-name { font-size: 14px; font-weight: 600; }
+  .featured-card .f-info .f-desc { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
+
+  /* ====== 回到顶部 ====== */
+  .back-top {
+    position: fixed;
+    bottom: 30px; right: 24px;
+    width: 44px; height: 44px;
+    background: var(--card-bg);
+    border-radius: 50%;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    cursor: pointer;
+    transition: all 0.3s;
+    opacity: 0;
+    visibility: hidden;
+    text-decoration: none;
+    color: var(--text);
+    z-index: 999;
+  }
+  .back-top.show { opacity: 1; visibility: visible; }
+  .back-top:hover { background: var(--primary); color: #fff; border-color: var(--primary); transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+
+  /* ====== 底部 ====== */
+  .footer {
+    max-width: 980px;
+    margin: 30px auto 0;
+    padding: 30px 20px 20px;
+    border-top: 1px solid var(--border);
+  }
+  .footer-links {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+    margin-bottom: 24px;
+  }
+  .footer-links .fl-col h4 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 10px;
+  }
+  .footer-links .fl-col a {
+    display: block;
+    font-size: 12px;
+    color: var(--text-secondary);
+    text-decoration: none;
+    padding: 4px 0;
+    transition: color 0.2s;
+  }
+  .footer-links .fl-col a:hover { color: var(--primary); }
+  .footer-bottom {
+    text-align: center;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-size: 12px;
+    color: var(--text-tertiary);
+    line-height: 1.8;
+  }
+  .footer-bottom a { color: var(--primary); text-decoration: none; }
+  .footer-stats {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin: 14px 0;
+  }
+  .footer-stats .stat-item {
+    text-align: center;
+  }
+  .footer-stats .stat-num {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--primary);
+  }
+  .footer-stats .stat-label {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    margin-top: 2px;
+  }
+
+  /* ====== 响应式 ====== */
+  @media (max-width: 768px) {
+    .top-nav { padding: 0 12px; }
+    .top-nav .logo { font-size: 14px; margin-right: 10px; }
+    .top-nav .logo span { font-size: 16px; }
+    .top-nav .nav-links a { font-size: 11px; padding: 5px 6px; }
+    .hero { padding: 28px 16px 24px; }
+    .hero h1 { font-size: 24px; }
+    .search-wrapper { flex-wrap: nowrap; border-radius: 24px; }
+    .search-wrapper select { min-width: 70px; padding: 10px 6px 10px 12px; font-size: 12px; }
+    .search-wrapper input { padding: 10px 10px; font-size: 13px; }
+    .search-wrapper button { padding: 10px 16px; min-width: 60px; font-size: 13px; }
+    .quick-icons .icon-grid { grid-template-columns: repeat(5, 1fr); padding: 14px 4px 10px; }
+    .quick-icons .icon-item .qi-icon { width: 38px; height: 38px; }
+    .card-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; }
+    .card { padding: 12px 8px; }
+    .section { padding: 16px; }
+    .footer-links { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .section-tabs { gap: 4px; }
+    .section-tabs a { font-size: 11px; padding: 5px 10px; }
+    .footer-stats { gap: 16px; flex-wrap: wrap; }
+    .featured-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 480px) {
+    .quick-icons .icon-grid { grid-template-columns: repeat(5, 1fr); }
+    .card-grid { grid-template-columns: repeat(auto-fill, minmax(95px, 1fr)); }
+    .top-nav .nav-links a { padding: 4px 5px; font-size: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ========== 顶部导航栏 ========== -->
+<nav class="top-nav" id="topNav">
+  <a href="#" class="logo"><span>📖</span>知产导航</a>
+  <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()" title="切换暗黑模式">🌙</button>
+  <div class="nav-links">
+    <a href="#s-official">🏛️ 官方机构</a>
+    <a href="#s-patent">🔍 专利检索</a>
+    <a href="#s-trademark">®️ 商标查询</a>
+    <a href="#s-case">⚖️ 案例裁判</a>
+    <a href="#s-media">📰 行业媒体</a>
+    <a href="#s-overseas">🌍 海外知产</a>
+    <a href="#s-standard">📐 标准专利</a>
+    <a href="#s-academic">🎓 学术资源</a>
+    <a href="#s-tools">🛠️ 工具服务</a>
+    <a href="#s-featured">⭐ 我们的产品</a>
+  </div>
+</nav>
+
+<!-- ========== Hero 搜索区 ========== -->
+<div class="hero">
+  <div class="hero-content">
+    <h1>📖 知产导航</h1>
+    <p>知识产权信息门户 · 全网 IP 资源一站直达</p>
+    <div class="search-wrapper">
+      <select id="searchEngine">
+        <option value="https://www.baidu.com/s?wd=">百度</option>
+        <option value="https://www.google.com/search?q=" selected>Google</option>
+        <option value="https://pss-system.cponline.cnipa.gov.cn/tyt/tyt?p=">专利检索</option>
+        <option value="https://sbj.cnipa.gov.cn/sbjSearch/search?keyword=">商标查询</option>
+        <option value="https://scholar.google.com/scholar?q=">学术搜索</option>
+      </select>
+      <input type="text" id="searchInput" placeholder="搜索知识产权信息..." onkeydown="if(event.key==='Enter') doSearch()">
+      <button onclick="doSearch()">搜索</button>
+    </div>
+    <div class="hot-searches">
+      <span>🔥 热门：</span>
+      <a href="javascript:void(0)" onclick="quickSearch('标准必要专利 SEP')">标准必要专利 SEP</a>
+      <a href="javascript:void(0)" onclick="quickSearch('AI 生成物 著作权')">AI 生成物 著作权</a>
+      <a href="javascript:void(0)" onclick="quickSearch('专利无效 2026')">专利无效 2026</a>
+      <a href="javascript:void(0)" onclick="quickSearch('商标恶意注册')">商标恶意注册</a>
+      <a href="javascript:void(0)" onclick="quickSearch('PCT 国际申请 流程')">PCT 国际申请</a>
+    </div>
+  </div>
+</div>
+
+<!-- ========== 快捷图标区 ========== -->
+<div class="quick-icons">
+  <div class="icon-grid">
+    <a href="https://www.cnipa.gov.cn/" class="icon-item" target="_blank">
+      <span class="qi-icon" style="background:#e8f0fe;"><img src="https://www.google.com/s2/favicons?domain=cnipa.gov.cn&sz=32" alt="🇨🇳"></span>
+      <span class="qi-name">国知局</span>
+    </a>
+    <a href="https://pss-system.cponline.cnipa.gov.cn/" class="icon-item" target="_blank">
+      <span class="qi-icon" style="background:#e6f4ea;"><img src="https://www.google.com/s2/favicons?domain=pss-system.cponline.cnipa.gov.cn&sz=32" alt="🔎"></span>
+      <span class="qi-name">专利检索</span>
+    </a>
+    <a href="https://sbj.cnipa.gov.cn/" class="icon-item" target="_blank">
+      <span class="qi-icon" style="background:#fef3e0;"><img src="https://www.google.com/s2/favicons?domain=sbj.cnipa.gov.cn&sz=32" alt="™️"></span>
+      <span class="qi-name">商标查询</span>
+    </a>
+    <a href="https://wenshu.court.gov.cn/" class="icon-item" target="_blank">
+      <span class="qi-icon" style="background:#fce8e6;"><img src="https://www.google.com/s2/favicons?domain=wenshu.court.gov.cn&sz=32" alt="📜"></span>
+      <span class="qi-name">裁判文书</span>
+    </a>
+    <a href="https://patents.google.com/" class="icon-item" target="_blank">
+      <span class="qi-icon" style="background:#f3e8fd;"><img src="https://www.google.com/s2/favicons?domain=patents.google.com&sz=32" alt="🔬"></span>
+      <span class="qi-name">Google Patents</span>
+    </a>
+    <a href="https://www.epo.org/" class="icon-item" target="_blank">
+      <span class="qi-icon" style="background:#e6faf8;"><img src="https://www.google.com/s2/favicons?domain=epo.org&sz=32" alt="🌍"></span>
+      <span class="qi-name">EPO</span>
+    </a>
+    <a href="https://www.wipo.int/" class="icon-item" target="_blank">
+      <span class="qi-icon" style="background:#f0e6ff;"><img src="https://www.google.com/s2/favicons?domain=wipo.int&sz=32" alt="🌐"></span>
+      <span class="qi-name">WIPO</span>
+    </a>
+    <a href="https://www.zhihuiya.com/" class="icon-item" target="_blank">
+      <span class="qi-icon" style="background:#e8f5e9;"><img src="https://www.google.com/s2/favicons?domain=zhihuiya.com&sz=32" alt="💡"></span>
+      <span class="qi-name">智慧芽</span>
+    </a>
+    <a href="https://www.zhichanli.com/" class="icon-item" target="_blank">
+      <span class="qi-icon" style="background:#fce4ec;"><img src="https://www.google.com/s2/favicons?domain=zhichanli.com&sz=32" alt="📝"></span>
+      <span class="qi-name">知产力</span>
+    </a>
+    <a href="D:/daily/ip-news-hub/data/backups/" class="icon-item" target="_blank">
+      <span class="qi-icon" style="background:linear-gradient(135deg,#e8f0fe,#f3e8fd);"><span style="font-size:22px;">📰</span></span>
+      <span class="qi-name">知产早报</span>
+    </a>
+  </div>
+</div>
+
+<!-- ========== 板块导航 Tab ========== -->
+<div class="section-tabs">
+  <a href="#s-official">🏛️ 官方机构</a>
+  <a href="#s-patent">🔍 专利检索</a>
+  <a href="#s-trademark">®️ 商标查询</a>
+  <a href="#s-case">⚖️ 案例裁判</a>
+  <a href="#s-media">📰 行业媒体</a>
+  <a href="#s-overseas">🌍 海外知产</a>
+  <a href="#s-standard">📐 标准专利</a>
+  <a href="#s-academic">🎓 学术资源</a>
+  <a href="#s-tools">🛠️ 工具服务</a>
+  <a href="#s-featured">⭐ 我们的产品</a>
+</div>
+
+<!-- ========== 实时过滤搜索 ========== -->
+<div class="filter-bar">
+  <input type="text" id="filterInput" placeholder="🔍 过滤站点名称或描述..." oninput="filterCards()">
+</div>
+
+<div class="container">
+
+<!-- 无匹配提示 -->
+<div class="no-results" id="noResults">
+  <div class="nr-icon">🔍</div>
+  <div class="nr-text">没有找到匹配的站点，试试其他关键词</div>
+</div>
+
+<div class="info-bar" id="infoBar"></div>
+
+<!-- ====== 板块1: 官方机构（15个） ====== -->
+<div class="section" id="s-official">
+  <div class="section-header">
+    <span class="icon-box" style="background:#1a73e8;">🏛️</span>
+    <span class="section-title">官方机构</span>
+    <span class="badge">15 个</span>
+    <a href="https://www.cnipa.gov.cn/" class="more-link" target="_blank">国知局 →</a>
+  </div>
+  <div class="card-grid">
+    <a href="https://www.cnipa.gov.cn/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=cnipa.gov.cn&sz=32" alt="🇨🇳"></span><span class="name">国家知识产权局</span><span class="desc">CNIPA 官网</span></a>
+    <a href="https://www.cnipa.gov.cn/col/col75/index.html" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=cnipa.gov.cn&sz=32" alt="📋"></span><span class="name">CNIPA 政策</span><span class="desc">通知公告·政策文件</span></a>
+    <a href="https://www.wipo.int/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=wipo.int&sz=32" alt="🌐"></span><span class="name">WIPO</span><span class="desc">世界知识产权组织</span></a>
+    <a href="https://www.uspto.gov/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=uspto.gov&sz=32" alt="🇺🇸"></span><span class="name">USPTO</span><span class="desc">美国专利商标局</span></a>
+    <a href="https://www.epo.org/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=epo.org&sz=32" alt="🇪🇺"></span><span class="name">EPO</span><span class="desc">欧洲专利局</span></a>
+    <a href="https://www.jpo.go.jp/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=jpo.go.jp&sz=32" alt="🇯🇵"></span><span class="name">JPO</span><span class="desc">日本特许厅</span></a>
+    <a href="https://www.kipo.go.kr/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=kipo.go.kr&sz=32" alt="🇰🇷"></span><span class="name">KIPO</span><span class="desc">韩国特许厅</span></a>
+    <a href="https://euipo.europa.eu/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=euipo.europa.eu&sz=32" alt="🇪🇺"></span><span class="name">EUIPO</span><span class="desc">欧盟知识产权局</span></a>
+    <a href="https://www.gov.uk/government/organisations/intellectual-property-office" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=gov.uk&sz=32" alt="🇬🇧"></span><span class="name">UK IPO</span><span class="desc">英国知识产权局</span></a>
+    <a href="https://www.dpma.de/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=dpma.de&sz=32" alt="🇩🇪"></span><span class="name">DPMA</span><span class="desc">德国专利商标局</span></a>
+    <a href="https://ised-isde.canada.ca/site/canadian-intellectual-property-office/en" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=ised-isde.canada.ca&sz=32" alt="🇨🇦"></span><span class="name">CIPO</span><span class="desc">加拿大知识产权局</span></a>
+    <a href="https://www.ipaustralia.gov.au/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=ipaustralia.gov.au&sz=32" alt="🇦🇺"></span><span class="name">IP Australia</span><span class="desc">澳大利亚知识产权局</span></a>
+    <a href="https://www.ipos.gov.sg/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=ipos.gov.sg&sz=32" alt="🇸🇬"></span><span class="name">IPOS</span><span class="desc">新加坡知识产权局</span></a>
+    <a href="https://www.inpi.fr/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=inpi.fr&sz=32" alt="🇫🇷"></span><span class="name">INPI France</span><span class="desc">法国知识产权局</span></a>
+    <a href="https://rospatent.gov.ru/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=rospatent.gov.ru&sz=32" alt="🇷🇺"></span><span class="name">Rospatent</span><span class="desc">俄罗斯知识产权局</span></a>
+  </div>
+</div>
+
+<!-- ====== 板块2: 专利检索（16个） ====== -->
+<div class="section" id="s-patent">
+  <div class="section-header">
+    <span class="icon-box" style="background:#0f9d58;">🔍</span>
+    <span class="section-title">专利检索</span>
+    <span class="badge">16 个</span>
+    <a href="https://patents.google.com/" class="more-link" target="_blank">Google Patents →</a>
+  </div>
+  <div class="card-grid">
+    <a href="https://pss-system.cponline.cnipa.gov.cn/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=pss-system.cponline.cnipa.gov.cn&sz=32" alt="🔎"></span><span class="name">CNIPA 检索</span><span class="desc">中国专利数据库</span></a>
+    <a href="https://patents.google.com/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=patents.google.com&sz=32" alt="🔬"></span><span class="name">Google Patents</span><span class="desc">全球专利搜索</span></a>
+    <a href="https://worldwide.espacenet.com/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=worldwide.espacenet.com&sz=32" alt="🌍"></span><span class="name">Espacenet</span><span class="desc">EPO 全球专利</span></a>
+    <a href="https://www.patentscope.wipo.int/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=patentscope.wipo.int&sz=32" alt="📡"></span><span class="name">PATENTSCOPE</span><span class="desc">PCT 国际专利</span></a>
+    <a href="https://epub.cnipa.gov.cn/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=epub.cnipa.gov.cn&sz=32" alt="📄"></span><span class="name">专利公布公告</span><span class="desc">1985 年至今</span></a>
+    <a href="https://d.cnipa.gov.cn/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=d.cnipa.gov.cn&sz=32" alt="🎨"></span><span class="name">外观设计检索</span><span class="desc">以图搜图</span></a>
+    <a href="https://www.zhihuiya.com/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=zhihuiya.com&sz=32" alt="💡"></span><span class="name">智慧芽 PatSnap</span><span class="desc">商业专利分析</span></a>
+    <a href="https://www.soopat.com/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=soopat.com&sz=32" alt="🔍"></span><span class="name">SooPAT</span><span class="desc">免费专利搜索</span></a>
+    <a href="https://www.baiten.cn/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=baiten.cn&sz=32" alt="🌉"></span><span class="name">佰腾网</span><span class="desc">专利检索分析</span></a>
+    <a href="https://www.innojoy.com/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=innojoy.com&sz=32" alt="📊"></span><span class="name">InnoJoy</span><span class="desc">专利搜索引擎</span></a>
+    <a href="https://www.lens.org/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=lens.org&sz=32" alt="🔭"></span><span class="name">The Lens</span><span class="desc">专利+学术分析</span></a>
+    <a href="http://www.zldsj.com/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=zldsj.com&sz=32" alt="📈"></span><span class="name">Inspiro</span><span class="desc">知识产权大数据</span></a>
+    <a href="https://www.cnipa.gov.cn/col/col152/index.html" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=cnipa.gov.cn&sz=32" alt="📊"></span><span class="name">统计报告</span><span class="desc">知识产权统计</span></a>
+    <a href="https://www.j-platpat.inpit.go.jp/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=j-platpat.inpit.go.jp&sz=32" alt="🇯🇵"></span><span class="name">J-PlatPat</span><span class="desc">日本专利检索</span></a>
+    <a href="https://www.freepatentsonline.com/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=freepatentsonline.com&sz=32" alt="🆓"></span><span class="name">FPO</span><span class="desc">Free Patents Online</span></a>
+    <a href="https://chinaip.cnipa.gov.cn/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=chinaip.cnipa.gov.cn&sz=32" alt="🏭"></span><span class="name">重点产业专利</span><span class="desc">产业专利信息平台</span></a>
+  </div>
+</div>
+
+<!-- ====== 板块3: 商标查询（12个） ====== -->
+<div class="section" id="s-trademark">
+  <div class="section-header">
+    <span class="icon-box" style="background:#e37400;">®️</span>
+    <span class="section-title">商标查询</span>
+    <span class="badge">12 个</span>
+    <a href="https://sbj.cnipa.gov.cn/sbjSearch/" class="more-link" target="_blank">中国商标 →</a>
+  </div>
+  <div class="card-grid">
+    <a href="https://sbj.cnipa.gov.cn/sbjSearch/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=sbj.cnipa.gov.cn&sz=32" alt="™️"></span><span class="name">中国商标查询</span><span class="desc">CNIPA 商标检索</span></a>
+    <a href="https://branddb.wipo.int/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=branddb.wipo.int&sz=32" alt="🏷️"></span><span class="name">WIPO BrandDB</span><span class="desc">全球商标数据库</span></a>
+    <a href="https://www.uspto.gov/trademarks/search" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=uspto.gov&sz=32" alt="🇺🇸"></span><span class="name">USPTO 商标</span><span class="desc">美国商标搜索</span></a>
+    <a href="https://euipo.europa.eu/eSearch/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=euipo.europa.eu&sz=32" alt="🇪🇺"></span><span class="name">EUIPO 商标</span><span class="desc">欧盟商标检索</span></a>
+    <a href="https://www.tmdn.org/tmview/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=tmdn.org&sz=32" alt="🔍"></span><span class="name">TMview</span><span class="desc">35+ 国商标检索</span></a>
+    <a href="https://www.tmdn.org/tmdsview-web/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=tmdn.org&sz=32" alt="🎨"></span><span class="name">Designview</span><span class="desc">外观设计检索</span></a>
+    <a href="https://www.j-platpat.inpit.go.jp/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=j-platpat.inpit.go.jp&sz=32" alt="🇯🇵"></span><span class="name">J-PlatPat 商标</span><span class="desc">日本商标检索</span></a>
+    <a href="https://www.kipris.or.kr/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=kipris.or.kr&sz=32" alt="🇰🇷"></span><span class="name">KIPRIS</span><span class="desc">韩国商标检索</span></a>
+    <a href="https://www.gov.uk/trademarks-search" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=gov.uk&sz=32" alt="🇬🇧"></span><span class="name">UK IPO 商标</span><span class="desc">英国商标检索</span></a>
+    <a href="https://www.trademark.legal/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=trademark.legal&sz=32" alt="🌐"></span><span class="name">Trademark Legal</span><span class="desc">全球商标查询</span></a>
+    <a href="https://www.corsearch.com/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=corsearch.com&sz=32" alt="🔎"></span><span class="name">Corsearch</span><span class="desc">商标检索监控</span></a>
+    <a href="https://euipo.europa.eu/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=euipo.europa.eu&sz=32" alt="🏢"></span><span class="name">EUIPO 官网</span><span class="desc">欧盟知识产权局</span></a>
+  </div>
+</div>
+
+<!-- ====== 板块4: 案例裁判（10个） ====== -->
+<div class="section" id="s-case">
+  <div class="section-header">
+    <span class="icon-box" style="background:#d93025;">⚖️</span>
+    <span class="section-title">案例裁判</span>
+    <span class="badge">10 个</span>
+    <a href="https://wenshu.court.gov.cn/" class="more-link" target="_blank">裁判文书网 →</a>
+  </div>
+  <div class="card-grid">
+    <a href="https://wenshu.court.gov.cn/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=wenshu.court.gov.cn&sz=32" alt="📜"></span><span class="name">裁判文书网</span><span class="desc">中国司法文书</span></a>
+    <a href="https://www.cnipa.gov.cn/col/col1529/index.html" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=cnipa.gov.cn&sz=32" alt="📂"></span><span class="name">专利复审案例</span><span class="desc">CNIPA 复审决定</span></a>
+    <a href="https://www.cnipa.gov.cn/col/col1530/index.html" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=cnipa.gov.cn&sz=32" alt="📂"></span><span class="name">无效宣告案例</span><span class="desc">CNIPA 无效决定</span></a>
+    <a href="https://www.cnipa.gov.cn/col/col88/index.html" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=cnipa.gov.cn&sz=32" alt="📰"></span><span class="name">典型案例发布</span><span class="desc">CNIPA 典型案例</span></a>
+    <a href="https://ip.pkulaw.com/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=ip.pkulaw.com&sz=32" alt="⚖️"></span><span class="name">IP 法宝</span><span class="desc">北大法宝知产版</span></a>
+    <a href="https://www.ipknow.cn/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=ipknow.cn&sz=32" alt="📚"></span><span class="name">知信通</span><span class="desc">知产文献案例库</span></a>
+    <a href="https://wipolex.wipo.int/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=wipolex.wipo.int&sz=32" alt="🌐"></span><span class="name">WIPO Lex</span><span class="desc">全球知产法律</span></a>
+    <a href="https://www.dartsip.com/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=dartsip.com&sz=32" alt="🎯"></span><span class="name">Darts-IP</span><span class="desc">全球 IP 判例</span></a>
+    <a href="https://ipc.court.gov.cn/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=ipc.court.gov.cn&sz=32" alt="🏛️"></span><span class="name">最高法知产法庭</span><span class="desc">最高人民法院</span></a>
+    <a href="https://www.lexology.com/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=lexology.com&sz=32" alt="📖"></span><span class="name">Lexology</span><span class="desc">全球法律资讯</span></a>
+  </div>
+</div>
+
+<!-- ====== 板块5: 行业媒体（12个） ====== -->
+<div class="section" id="s-media">
+  <div class="section-header">
+    <span class="icon-box" style="background:#0dc2b8;">📰</span>
+    <span class="section-title">行业媒体</span>
+    <span class="badge">12 个</span>
+    <a href="https://www.iprdaily.cn/" class="more-link" target="_blank">IPRdaily →</a>
+  </div>
+  <div class="card-grid">
+    <a href="https://www.zhichanli.com/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=zhichanli.com&sz=32" alt="📝"></span><span class="name">知产力</span><span class="desc">IP 行业深度媒体</span></a>
+    <a href="https://www.zhichanbao.com/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=zhichanbao.com&sz=32" alt="📊"></span><span class="name">知产宝</span><span class="desc">IP 数据平台</span></a>
+    <a href="https://www.ciplawyer.cn/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=ciplawyer.cn&sz=32" alt="👥"></span><span class="name">知产律师网</span><span class="desc">IP 律师专业平台</span></a>
+    <a href="https://www.iprdaily.cn/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=iprdaily.cn&sz=32" alt="📡"></span><span class="name">IPRdaily 中文</span><span class="desc">全球 IP 资讯</span></a>
+    <a href="https://www.iprdaily.com/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=iprdaily.com&sz=32" alt="🌏"></span><span class="name">IPRdaily 英文</span><span class="desc">Global IP News</span></a>
+    <a href="https://news.cnipa.gov.cn/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=news.cnipa.gov.cn&sz=32" alt="📢"></span><span class="name">CNIPA 要闻</span><span class="desc">知识产权新闻</span></a>
+    <a href="https://iprchn.com/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=iprchn.com&sz=32" alt="📰"></span><span class="name">知产资讯网</span><span class="desc">中国知识产权资讯网</span></a>
+    <a href="https://www.managingip.com/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=managingip.com&sz=32" alt="📘"></span><span class="name">Managing IP</span><span class="desc">国际 IP 权威媒体</span></a>
+    <a href="https://www.iam-media.com/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=iam-media.com&sz=32" alt="📗"></span><span class="name">IAM Media</span><span class="desc">知产资产管理</span></a>
+    <a href="https://www.lexology.com/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=lexology.com&sz=32" alt="📖"></span><span class="name">Lexology</span><span class="desc">法律资讯分析</span></a>
+    <a href="https://www.zhichanjingji.com/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=zhichanjingji.com&sz=32" alt="💰"></span><span class="name">知产财经</span><span class="desc">IP 财经资讯</span></a>
+    <a href="https://www.patentstar.com.cn/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=patentstar.com.cn&sz=32" alt="⭐"></span><span class="name">专利之星</span><span class="desc">专利信息服务平台</span></a>
+  </div>
+</div>
+
+<!-- ====== 板块6: 海外知产（10个） ====== -->
+<div class="section" id="s-overseas">
+  <div class="section-header">
+    <span class="icon-box" style="background:#9334e6;">🌍</span>
+    <span class="section-title">海外知产</span>
+    <span class="badge">10 个</span>
+    <a href="https://www.wipo.int/publications/en/" class="more-link" target="_blank">WIPO →</a>
+  </div>
+  <div class="card-grid">
+    <a href="https://www.wipo.int/publications/en/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=wipo.int&sz=32" alt="📚"></span><span class="name">WIPO 出版物</span><span class="desc">世界知识产权报告</span></a>
+    <a href="https://www.wipo.int/pressroom/en/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=wipo.int&sz=32" alt="📰"></span><span class="name">WIPO 新闻室</span><span class="desc">WIPO 新闻发布</span></a>
+    <a href="https://www.wipo.int/global_innovation_index/en/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=wipo.int&sz=32" alt="📈"></span><span class="name">全球创新指数</span><span class="desc">GII 报告</span></a>
+    <a href="https://www.uspto.gov/about-us/news-updates" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=uspto.gov&sz=32" alt="🇺🇸"></span><span class="name">USPTO 新闻</span><span class="desc">美国知产动态</span></a>
+    <a href="https://www.epo.org/news-events.html" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=epo.org&sz=32" alt="🇪🇺"></span><span class="name">EPO 新闻</span><span class="desc">欧洲知产动态</span></a>
+    <a href="https://wipolex.wipo.int/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=wipolex.wipo.int&sz=32" alt="⚖️"></span><span class="name">WIPO Lex</span><span class="desc">全球知产法规</span></a>
+    <a href="https://www.aseanip.org/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=aseanip.org&sz=32" alt="🌏"></span><span class="name">ASEAN IP</span><span class="desc">东盟知产门户</span></a>
+    <a href="https://www.oapi.int/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=oapi.int&sz=32" alt="🌍"></span><span class="name">OAPI</span><span class="desc">非洲知识产权组织</span></a>
+    <a href="https://www.aripo.org/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=aripo.org&sz=32" alt="🌍"></span><span class="name">ARIPO</span><span class="desc">非洲地区知产组织</span></a>
+    <a href="https://www.eapo.org/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=eapo.org&sz=32" alt="🌍"></span><span class="name">EAPO</span><span class="desc">欧亚专利局</span></a>
+  </div>
+</div>
+
+<!-- ====== 板块7: 标准与知识产权（新增，8个） ====== -->
+<div class="section" id="s-standard">
+  <div class="section-header">
+    <span class="icon-box" style="background:#e83e8c;">📐</span>
+    <span class="section-title">标准与知识产权</span>
+    <span class="badge">8 个</span>
+    <a href="https://www.etsi.org/" class="more-link" target="_blank">ETSI →</a>
+  </div>
+  <div class="card-grid">
+    <a href="https://www.etsi.org/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=etsi.org&sz=32" alt="📐"></span><span class="name">ETSI</span><span class="desc">欧洲电信标准协会</span></a>
+    <a href="https://www.ieee.org/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=ieee.org&sz=32" alt="⚡"></span><span class="name">IEEE</span><span class="desc">电气电子工程师学会</span></a>
+    <a href="https://www.3gpp.org/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=3gpp.org&sz=32" alt="📡"></span><span class="name">3GPP</span><span class="desc">移动通信标准</span></a>
+    <a href="https://www.itu.int/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=itu.int&sz=32" alt="🌐"></span><span class="name">ITU</span><span class="desc">国际电信联盟</span></a>
+    <a href="https://www.iso.org/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=iso.org&sz=32" alt="🏅"></span><span class="name">ISO</span><span class="desc">国际标准化组织</span></a>
+    <a href="https://std.samr.gov.cn/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=std.samr.gov.cn&sz=32" alt="🇨🇳"></span><span class="name">全国标准信息平台</span><span class="desc">国家标准查询</span></a>
+    <a href="https://www.avanci.com/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=avanci.com&sz=32" alt="🔗"></span><span class="name">Avanci</span><span class="desc">SEP 许可平台</span></a>
+    <a href="https://www.cssn.net.cn/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=cssn.net.cn&sz=32" alt="📏"></span><span class="name">中国标准服务</span><span class="desc">标准信息检索</span></a>
+  </div>
+</div>
+
+<!-- ====== 板块8: 学术资源（8个） ====== -->
+<div class="section" id="s-academic">
+  <div class="section-header">
+    <span class="icon-box" style="background:#1a73e8;">🎓</span>
+    <span class="section-title">学术资源</span>
+    <span class="badge">8 个</span>
+    <a href="https://scholar.google.com/" class="more-link" target="_blank">Google Scholar →</a>
+  </div>
+  <div class="card-grid">
+    <a href="https://www.cnki.net/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=cnki.net&sz=32" alt="📖"></span><span class="name">知网 CNKI</span><span class="desc">中文学术论文</span></a>
+    <a href="https://www.wanfangdata.com.cn/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=wanfangdata.com.cn&sz=32" alt="📚"></span><span class="name">万方数据</span><span class="desc">学术数据库</span></a>
+    <a href="https://scholar.google.com/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=scholar.google.com&sz=32" alt="🎯"></span><span class="name">Google Scholar</span><span class="desc">学术搜索</span></a>
+    <a href="https://www.heinonline.org/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=heinonline.org&sz=32" alt="⚖️"></span><span class="name">HeinOnline</span><span class="desc">法学全文数据库</span></a>
+    <a href="https://www.cqvip.com/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=cqvip.com&sz=32" alt="📐"></span><span class="name">维普期刊</span><span class="desc">中文科技期刊</span></a>
+    <a href="https://xueshu.baidu.com/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=xueshu.baidu.com&sz=32" alt="🎯"></span><span class="name">百度学术</span><span class="desc">学术资源搜索</span></a>
+    <a href="https://www.chaoxing.com/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=chaoxing.com&sz=32" alt="⭐"></span><span class="name">超星发现</span><span class="desc">知识发现系统</span></a>
+    <a href="https://www.paper.edu.cn/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=paper.edu.cn&sz=32" alt="📝"></span><span class="name">科技论文在线</span><span class="desc">开放获取论文</span></a>
+  </div>
+</div>
+
+<!-- ====== 板块9: 工具服务（14个） ====== -->
+<div class="section" id="s-tools">
+  <div class="section-header">
+    <span class="icon-box" style="background:#e37400;">🛠️</span>
+    <span class="section-title">工具服务</span>
+    <span class="badge">14 个</span>
+  </div>
+  <div class="card-grid">
+    <a href="https://www.cnipa.gov.cn/col/col1517/index.html" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=cnipa.gov.cn&sz=32" alt="📅"></span><span class="name">专利年费查询</span><span class="desc">CNIPA 费用查询</span></a>
+    <a href="https://www.cnipa.gov.cn/col/col1518/index.html" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=cnipa.gov.cn&sz=32" alt="📋"></span><span class="name">专利通知书</span><span class="desc">电子发文查询</span></a>
+    <a href="https://www.cnipa.gov.cn/col/col1519/index.html" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=cnipa.gov.cn&sz=32" alt="🔄"></span><span class="name">专利事务服务</span><span class="desc">备案/变更/薄页</span></a>
+    <a href="https://cponline.cnipa.gov.cn/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=cponline.cnipa.gov.cn&sz=32" alt="📝"></span><span class="name">专利业务办理</span><span class="desc">电子申请系统</span></a>
+    <a href="https://sbj.cnipa.gov.cn/sbj/wssq/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=sbj.cnipa.gov.cn&sz=32" alt="®️"></span><span class="name">商标网上服务</span><span class="desc">商标注册申请</span></a>
+    <a href="https://www.ccopyright.com.cn/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=ccopyright.com.cn&sz=32" alt="©️"></span><span class="name">版权保护中心</span><span class="desc">中国著作权登记</span></a>
+    <a href="https://ipdps.cnipa.gov.cn/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=ipdps.cnipa.gov.cn&sz=32" alt="📊"></span><span class="name">知识产权数据下载</span><span class="desc">开放数据资源</span></a>
+    <a href="https://ggfw.cnipa.gov.cn/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=ggfw.cnipa.gov.cn&sz=32" alt="🏢"></span><span class="name">公共服务网</span><span class="desc">知产一网通办</span></a>
+    <a href="https://deepseek.com/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=deepseek.com&sz=32" alt="🤖"></span><span class="name">DeepSeek</span><span class="desc">AI 智能助手</span></a>
+    <a href="https://tongyi.aliyun.com/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=tongyi.aliyun.com&sz=32" alt="🧠"></span><span class="name">通义千问</span><span class="desc">AI 办公助手</span></a>
+    <a href="https://md.doocs.org/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=md.doocs.org&sz=32" alt="📝"></span><span class="name">Doocs MD</span><span class="desc">公众号排版</span></a>
+    <a href="https://www.patentnavi.org.cn/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=patentnavi.org.cn&sz=32" alt="🧭"></span><span class="name">专利导航平台</span><span class="desc">国家专利导航</span></a>
+    <a href="https://tysf.cponline.cnipa.gov.cn/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=tysf.cponline.cnipa.gov.cn&sz=32" alt="🔎"></span><span class="name">审查信息查询</span><span class="desc">中国及多国审查</span></a>
+    <a href="https://ggfw-dljg.cnipa.gov.cn/" class="card" target="_blank"><span class="card-icon"><img src="https://www.google.com/s2/favicons?domain=ggfw-dljg.cnipa.gov.cn&sz=32" alt="👤"></span><span class="name">代理机构查询</span><span class="desc">专利代理师/机构</span></a>
+  </div>
+</div>
+
+<!-- ====== 板块10: 我们的产品（特色区域） ====== -->
+<div class="featured-section" id="s-featured">
+  <div class="section-header">
+    <span class="icon-box">⭐</span>
+    <span class="section-title">我们的产品</span>
+    <span class="badge">知产早报</span>
+  </div>
+  <div class="featured-grid">
+    <a href="D:/daily/ip-news-hub/data/backups/" class="featured-card" target="_blank">
+      <span class="f-icon" style="background:var(--primary-light);color:var(--primary);">📰</span>
+      <div class="f-info">
+        <div class="f-name">知产早报</div>
+        <div class="f-desc">每日 IP 资讯 AI 摘要·发送到微信</div>
+      </div>
+    </a>
+    <a href="D:/daily/ip-news-hub/data/manual_links.md" class="featured-card" target="_blank">
+      <span class="f-icon" style="background:var(--green-light);color:var(--green);">🔗</span>
+      <div class="f-info">
+        <div class="f-name">推荐链接提交</div>
+        <div class="f-desc">手动提交文章链接到早报</div>
+      </div>
+    </a>
+    <a href="D:/daily/ip-news-hub/CLAUDE.md" class="featured-card" target="_blank">
+      <span class="f-icon" style="background:var(--purple-light);color:var(--purple);">🤖</span>
+      <div class="f-info">
+        <div class="f-name">CLAUDE.md</div>
+        <div class="f-desc">项目配置与使用说明</div>
+      </div>
+    </a>
+  </div>
+</div>
+
+</div>
+
+<!-- ========== 回到顶部 ========== -->
+<a href="#" class="back-top" id="backTop">↑</a>
+
+<!-- ========== 底部 ========== -->
+<div class="footer">
+  <div class="footer-stats">
+    <div class="stat-item"><div class="stat-num">10</div><div class="stat-label">资源板块</div></div>
+    <div class="stat-item"><div class="stat-num">105+</div><div class="stat-label">IP 网站链接</div></div>
+    <div class="stat-item"><div class="stat-num">30+</div><div class="stat-label">国家/地区</div></div>
+    <div class="stat-item"><div class="stat-num">⚡</div><div class="stat-label">每日更新</div></div>
+  </div>
+  <div class="footer-links">
+    <div class="fl-col">
+      <h4>常用检索</h4>
+      <a href="https://pss-system.cponline.cnipa.gov.cn/" target="_blank">CNIPA 专利检索</a>
+      <a href="https://sbj.cnipa.gov.cn/sbjSearch/" target="_blank">中国商标查询</a>
+      <a href="https://patents.google.com/" target="_blank">Google Patents</a>
+      <a href="https://wenshu.court.gov.cn/" target="_blank">裁判文书网</a>
+    </div>
+    <div class="fl-col">
+      <h4>官方机构</h4>
+      <a href="https://www.cnipa.gov.cn/" target="_blank">国家知识产权局</a>
+      <a href="https://www.wipo.int/" target="_blank">WIPO</a>
+      <a href="https://www.uspto.gov/" target="_blank">USPTO</a>
+      <a href="https://www.epo.org/" target="_blank">EPO</a>
+    </div>
+    <div class="fl-col">
+      <h4>行业媒体</h4>
+      <a href="https://www.zhichanli.com/" target="_blank">知产力</a>
+      <a href="https://www.iprdaily.cn/" target="_blank">IPRdaily</a>
+      <a href="https://www.ciplawyer.cn/" target="_blank">知产律师网</a>
+      <a href="https://www.managingip.com/" target="_blank">Managing IP</a>
+    </div>
+    <div class="fl-col">
+      <h4>关于我们</h4>
+      <a href="D:/daily/ip-news-hub/CLAUDE.md" target="_blank">项目说明</a>
+      <a href="D:/daily/ip-news-hub/data/backups/" target="_blank">早报存档</a>
+      <a href="D:/daily/ip-news-hub/data/manual_links.md" target="_blank">提交链接</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>📖 知产导航 · 知识产权信息门户</p>
+    <p>数据来源：国家知识产权局（CNIPA）· WIPO · 各官方机构</p>
+    <p style="margin-top:4px;">
+      <a href="https://www.cnipa.gov.cn/" target="_blank">国知局</a> ·
+      <a href="https://www.wipo.int/" target="_blank">WIPO</a> ·
+      <a href="https://github.com/" target="_blank">GitHub</a>
+    </p>
+    <p style="margin-top:6px;font-size:11px;color:#ccc;">知产早报 · AI 驱动的知识产权资讯服务</p>
+  </div>
+</div>
+
+<script>
+// ====== 搜索引擎搜索 ======
+function doSearch() {
+  var q = document.getElementById('searchInput').value.trim();
+  if (!q) return;
+  var engine = document.getElementById('searchEngine').value;
+  window.open(engine + encodeURIComponent(q), '_blank');
+}
+function quickSearch(q) {
+  var engine = document.getElementById('searchEngine').value;
+  window.open(engine + encodeURIComponent(q), '_blank');
+}
+
+// ====== 暗黑模式切换 ======
+function toggleTheme() {
+  var html = document.documentElement;
+  var btn = document.getElementById('themeToggle');
+  if (html.getAttribute('data-theme') === 'dark') {
+    html.removeAttribute('data-theme');
+    btn.textContent = '🌙';
+    localStorage.setItem('ipnav-theme', 'light');
+  } else {
+    html.setAttribute('data-theme', 'dark');
+    btn.textContent = '☀️';
+    localStorage.setItem('ipnav-theme', 'dark');
+  }
+}
+
+// ====== 卡片实时过滤 ======
+function filterCards() {
+  var query = document.getElementById('filterInput').value.trim().toLowerCase();
+  var cards = document.querySelectorAll('.card, .featured-card');
+  var sections = document.querySelectorAll('.section, .featured-section');
+  var noResults = document.getElementById('noResults');
+  var visibleCount = 0;
+
+  cards.forEach(function(card) {
+    var text = (card.textContent || '').toLowerCase();
+    if (!query || text.indexOf(query) > -1) {
+      card.classList.remove('hidden');
+      visibleCount++;
+    } else {
+      card.classList.add('hidden');
+    }
+  });
+
+  // 隐藏空板块
+  sections.forEach(function(section) {
+    var visibleCards = section.querySelectorAll('.card:not(.hidden), .featured-card:not(.hidden)');
+    if (!query) {
+      section.classList.remove('hidden');
+    } else if (visibleCards.length === 0 && !section.querySelector('.section-header')) {
+      section.classList.remove('hidden');
+    } else if (visibleCards.length === 0) {
+      section.classList.add('hidden');
+    } else {
+      section.classList.remove('hidden');
+    }
+  });
+
+  // 无结果提示
+  if (noResults) {
+    noResults.style.display = (query && visibleCount === 0) ? 'block' : 'none';
+  }
+}
+
+// ====== 初始化 ======
+(function() {
+  // 日期
+  var now = new Date();
+  var weekdays = ['日','一','二','三','四','五','六'];
+  document.getElementById('infoBar').innerHTML =
+    now.getFullYear() + '年' + String(now.getMonth()+1).padStart(2,'0') + '月' + String(now.getDate()).padStart(2,'0') + '日 · 星期' + weekdays[now.getDay()] +
+    '<span class="dot-divider">·</span>共 <strong>105+</strong> 个 IP 资源 <span class="dot-divider">·</span><strong>10</strong> 大板块';
+
+  // 恢复暗黑模式设置
+  var savedTheme = localStorage.getItem('ipnav-theme');
+  if (savedTheme === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    document.getElementById('themeToggle').textContent = '☀️';
+  }
+})();
+
+// 滚动监听
+(function() {
+  var nav = document.getElementById('topNav');
+  window.addEventListener('scroll', function() { nav.classList.toggle('scrolled', window.scrollY > 20); });
+})();
+(function() {
+  var btn = document.getElementById('backTop');
+  window.addEventListener('scroll', function() { btn.classList.toggle('show', window.scrollY > 500); });
+})();
+(function() {
+  var sections = document.querySelectorAll('.section, .featured-section');
+  var navLinks = document.querySelectorAll('.nav-links a');
+  window.addEventListener('scroll', function() {
+    var scrollY = window.scrollY + 100;
+    var activeId = '';
+    sections.forEach(function(s) { if (scrollY >= s.offsetTop) activeId = s.id; });
+    navLinks.forEach(function(l) { l.classList.toggle('active', l.getAttribute('href') === '#' + activeId); });
+  });
+})();
+</script>
+</body>
+</html>
